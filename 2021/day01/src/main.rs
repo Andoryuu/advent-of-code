@@ -1,5 +1,3 @@
-#![feature(let_else)]
-
 use std::fs;
 
 fn main() {
