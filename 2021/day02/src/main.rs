@@ -11,22 +11,35 @@ fn main() {
 }
 
 fn process_data(input: String) -> String {
-    let (h, d) = input
-        .lines()
-        .fold((0i32, 0i32), |res, line| match convert_to_command(line) {
-            MovementCommand::None => res,
-            MovementCommand::Down(a) => (res.0, res.1 + a),
-            MovementCommand::Forward(a) => (res.0 + a, res.1),
-            MovementCommand::Up(a) => (res.0, cmp::max(0, res.1 - a)),
-        });
+    let SlidingResultBase { depth, horizontal } =
+        input
+            .lines()
+            .map(convert_to_command)
+            .fold(SlidingResultBase::default(), |res, cmd| match cmd {
+                MovementCommand::None => res,
+                MovementCommand::Down(a) => SlidingResultBase {
+                    depth: res.depth + a,
+                    ..res
+                },
+                MovementCommand::Forward(a) => SlidingResultBase {
+                    horizontal: res.horizontal + a,
+                    ..res
+                },
+                MovementCommand::Up(a) => SlidingResultBase {
+                    depth: cmp::max(0, res.depth - a),
+                    ..res
+                },
+            });
 
-    (h * d).to_string()
+    (depth * horizontal).to_string()
 }
 
 fn process_data_adv(input: String) -> String {
-    let result = input.lines().fold(
+    let SlidingResult {
+        depth, horizontal, ..
+    } = input.lines().map(convert_to_command).fold(
         SlidingResult::default(),
-        |res, line| match convert_to_command(line) {
+        |res, cmd| match cmd {
             MovementCommand::None => res,
             MovementCommand::Down(a) => SlidingResult {
                 aim: res.aim + a,
@@ -44,7 +57,7 @@ fn process_data_adv(input: String) -> String {
         },
     );
 
-    (result.depth * result.horizontal).to_string()
+    (depth * horizontal).to_string()
 }
 
 fn convert_to_command(input: &str) -> MovementCommand {
@@ -73,6 +86,12 @@ enum MovementCommand {
     Down(i32),
     Forward(i32),
     Up(i32),
+}
+
+#[derive(Default)]
+struct SlidingResultBase {
+    depth: i32,
+    horizontal: i32,
 }
 
 #[derive(Default)]
