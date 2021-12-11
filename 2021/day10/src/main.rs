@@ -46,17 +46,12 @@ fn try_parse_line(input: &str) -> Result<Vec<char>, char> {
     for c in input.chars() {
         if is_open(c) {
             stack.push(c)
-        } else {
-            let open = get_open(c);
-            let maybe_top = stack.pop();
-
-            if let Some(top) = maybe_top {
-                if top != open {
-                    return Err(c);
-                }
-            } else {
+        } else if let Some(top) = stack.pop() {
+            if top != get_open(c) {
                 return Err(c);
             }
+        } else {
+            return Err(c);
         }
     }
 
@@ -84,7 +79,7 @@ fn get_compl_score(bracket: char) -> u32 {
 }
 
 fn is_open(bracket: char) -> bool {
-    bracket == '(' || bracket == '[' || bracket == '{' || bracket == '<'
+    matches!(bracket, '(' | '[' | '{' | '<')
 }
 
 fn get_open(close: char) -> char {
