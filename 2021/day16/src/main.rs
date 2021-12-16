@@ -6,6 +6,7 @@ use std::fs;
 
 use packet::Packet;
 
+// TODO: use 'nom' crate instead of custom parser?
 fn main() {
     let input = fs::read_to_string("./_data/input.txt").expect("oh noes");
 

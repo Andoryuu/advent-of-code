@@ -4,6 +4,8 @@ use std::{collections::BTreeMap, fs};
 
 use dedup_queue::DedupQueue;
 
+// TODO: use 'BinaryHeap' instead of custom collection?
+// TODO: use Dijkstra algorithm instead of made up solution?
 fn main() {
     let input = fs::read_to_string("./_data/input.txt").expect("oh noes");
 
