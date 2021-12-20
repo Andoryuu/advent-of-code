@@ -5,6 +5,7 @@ use std::fs;
 use itertools::Itertools;
 use node::Node;
 
+// TODO: use 'slotmap' for node tree data?
 fn main() {
     let input = fs::read_to_string("./_data/input.txt").expect("oh noes");
 
