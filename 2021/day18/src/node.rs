@@ -26,6 +26,21 @@ pub struct Node {
     right: NodeValue,
 }
 
+impl ToString for Node {
+    fn to_string(&self) -> String {
+        let left = match &self.left {
+            NodeValue::Literal(v) => v.to_string(),
+            NodeValue::Child(bn) => bn.to_string(),
+        };
+        let right = match &self.right {
+            NodeValue::Literal(v) => v.to_string(),
+            NodeValue::Child(bn) => bn.to_string(),
+        };
+
+        format!("[{},{}]", left, right)
+    }
+}
+
 impl Node {
     pub fn from(s: &str) -> Self {
         let (rem, node) = parser_tuple(s).unwrap();
@@ -59,19 +74,6 @@ impl Node {
         };
 
         (left * 3) + (right * 2)
-    }
-
-    pub fn to_string(&self) -> String {
-        let left = match &self.left {
-            NodeValue::Literal(v) => v.to_string(),
-            NodeValue::Child(bn) => bn.to_string(),
-        };
-        let right = match &self.right {
-            NodeValue::Literal(v) => v.to_string(),
-            NodeValue::Child(bn) => bn.to_string(),
-        };
-
-        format!("[{},{}]", left, right)
     }
 
     fn normalize(&mut self) {
