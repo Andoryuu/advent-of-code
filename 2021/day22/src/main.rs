@@ -92,20 +92,11 @@ fn parse(input: String) -> Vec<Command> {
                 parse_i64(caps.get(12), caps.get(13)),
             );
 
-            if caps.get(1).unwrap().as_str() == "on" {
-                Command {
-                    x_range: x_r,
-                    y_range: y_r,
-                    z_range: z_r,
-                    toggle: true,
-                }
-            } else {
-                Command {
-                    x_range: x_r,
-                    y_range: y_r,
-                    z_range: z_r,
-                    toggle: false,
-                }
+            Command {
+                x_range: x_r,
+                y_range: y_r,
+                z_range: z_r,
+                toggle: caps.get(1).unwrap().as_str() == "on",
             }
         })
         .collect()
