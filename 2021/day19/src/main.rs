@@ -52,7 +52,7 @@ fn process_data(input: String) -> String {
         areas.push(col);
     }
 
-    let mut probes_per_area: Vec<BTreeMap<usize, BTreeSet<u64>>> = Vec::new();
+    let mut probes_per_area: Vec<BTreeMap<usize, (Vec<i32>, BTreeSet<u64>)>> = Vec::new();
     let mut distance_sets_per_area: Vec<BTreeSet<u64>> = Vec::new();
 
     for area in areas.iter() {
@@ -64,10 +64,16 @@ fn process_data(input: String) -> String {
             let (i2, v2) = probes.last().unwrap();
             let dist = get_distance(get_diff(v1, v2));
 
-            let v1_entry = probes_map.entry(*i1).or_insert_with(BTreeSet::new);
+            let (_, v1_entry) = probes_map
+                .entry(*i1)
+                .or_insert(((*v1).clone(), BTreeSet::new()));
+
             v1_entry.insert(dist);
 
-            let v2_entry = probes_map.entry(*i2).or_insert_with(BTreeSet::new);
+            let (_, v2_entry) = probes_map
+                .entry(*i2)
+                .or_insert(((*v2).clone(), BTreeSet::new()));
+
             v2_entry.insert(dist);
 
             distance_set.insert(dist);
@@ -82,7 +88,7 @@ fn process_data(input: String) -> String {
     let mut all_distances = distance_sets_per_area.first().unwrap().to_owned();
 
     while !to_process.is_empty() {
-        let (used_i, common_dists) = distance_sets_per_area
+        let mut distance_data: Vec<(usize, usize, Vec<u64>)> = distance_sets_per_area
             .iter()
             .enumerate()
             .filter(|(i, _)| to_process.contains(i))
@@ -92,53 +98,53 @@ fn process_data(input: String) -> String {
                     all_distances.intersection(a).cloned().collect::<Vec<u64>>(),
                 )
             })
-            .find(|(_, inter)| inter.len() > 50)
-            .unwrap();
+            .map(|(i, inter)| (inter.len(), i, inter))
+            .collect();
 
-        to_process.remove(&used_i);
+        distance_data.sort_by(|a, b| a.0.cmp(&b.0));
+
+        let (_, used_i, common_dists) = distance_data.last().unwrap();
+
+        to_process.remove(used_i);
 
         let common_set = BTreeSet::from_iter(common_dists.iter().cloned());
-        let new_probes = probes_per_area.get(used_i).unwrap();
+        let new_probes = probes_per_area.get(*used_i).unwrap();
 
-        for (_, new_probe) in new_probes.iter() {
+        for (_, (new_coords, new_probe)) in new_probes.iter() {
             let trimmed_new_probe =
                 BTreeSet::from_iter(new_probe.intersection(&common_set).into_iter().cloned());
 
-            if trimmed_new_probe.len() < 2 {
-                let new_i = all_probes.len();
-
-                all_probes.insert(new_i, new_probe.clone());
-
-                for dist in new_probe.iter() {
-                    all_distances.insert(*dist);
-                }
-
+            if trimmed_new_probe.len() < 10 {
                 continue;
             }
 
-            let has_match = all_probes
+            let matched = all_probes
                 .iter()
-                .filter(|(_, probe)| {
+                .filter(|(_, (_, probe))| {
                     probe.intersection(&trimmed_new_probe).count() == trimmed_new_probe.len()
                 })
                 .map(|(i, _)| *i)
-                .next();
+                .next()
+                .unwrap();
 
-            if let Some(matched) = has_match {
-                let existing = all_probes.get_mut(&matched).unwrap();
-
-                for dist in new_probe.iter() {
-                    existing.insert(*dist);
-                }
-            } else {
-                let new_i = all_probes.len();
-
-                all_probes.insert(new_i, new_probe.clone());
-            }
+            let (existing_coords, existing_dists) = all_probes.get_mut(&matched).unwrap();
 
             for dist in new_probe.iter() {
-                all_distances.insert(*dist);
+                existing_dists.insert(*dist);
             }
+
+
+
+            // if let Some(matched) = has_match {
+            // } else {
+            //     let new_i = all_probes.len();
+
+            //     all_probes.insert(new_i, new_probe.clone());
+            // }
+
+            // for dist in new_probe.iter() {
+            //     all_distances.insert(*dist);
+            // }
         }
     }
 
@@ -153,7 +159,7 @@ fn get_distance(vector: Vec<i32>) -> u64 {
     vector.iter().map(|v| (v * v) as u64).sum()
 }
 
-fn get_diff(vec1: &Vec<i32>, vec2: &Vec<i32>) -> Vec<i32> {
+fn get_diff(vec1: &[i32], vec2: &[i32]) -> Vec<i32> {
     vec1.iter().zip(vec2).map(|(v1, v2)| v1 - v2).collect()
 }
 
