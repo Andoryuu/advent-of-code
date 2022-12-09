@@ -11,11 +11,11 @@ fn main() {
 }
 
 fn process_data(input: String) -> String {
-    "".to_string()
+    "".to_owned()
 }
 
 fn process_data_adv(input: String) -> String {
-    "".to_string()
+    "".to_owned()
 }
 
 
@@ -27,12 +27,14 @@ mod tests {
     const TEST_CASE: &str = "";
 
     #[rstest]
-    fn base_check() {
-        assert_eq!("", process_data(TEST_CASE.to_string()));
+    #[case(TEST_CASE, "")]
+    fn base_check(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(expected, process_data(input.to_owned()));
     }
 
     #[rstest]
-    fn adv_check() {
-        assert_eq!("", process_data_adv(TEST_CASE.to_string()));
+    #[case(TEST_CASE, "")]
+    fn adv_check(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(expected, process_data_adv(input.to_owned()));
     }
 }
