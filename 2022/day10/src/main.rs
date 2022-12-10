@@ -71,15 +71,12 @@ fn process_data_adv(input: String) -> String {
 fn parse(input: String) -> Vec<Op> {
     input
         .lines()
-        .map(|line| line.split_whitespace())
-        .filter_map(|mut split| match split.next() {
-            Some("noop") => Some(Op::Noop),
-            Some("addx") => match split.next() {
-                Some(x) => Some(Op::AddX(x.parse::<i32>().unwrap())),
-                None => panic!("missing value for addx"),
-            },
-            Some(x) => panic!("unknown op: {}", x),
-            None => None,
+        .map(|line| line.split_whitespace().collect_vec())
+        .filter_map(|split| match split.as_slice() {
+            ["noop"] => Some(Op::Noop),
+            ["addx", v] => Some(Op::AddX(v.parse::<i32>().unwrap())),
+            [] => None,
+            _ => panic!("unknown op: {:?}", split),
         })
         .collect_vec()
 }

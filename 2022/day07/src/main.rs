@@ -1,3 +1,5 @@
+#![feature(if_let_guard)]
+
 use std::{cell::RefCell, fs, rc::Rc};
 
 use itertools::Itertools;
@@ -112,38 +114,23 @@ fn generate_structure(cmds: Vec<CmdLine>) -> Rc<RefCell<TreeNode>> {
 fn parse(input: String) -> Vec<CmdLine> {
     input
         .lines()
-        .map(|line| line.split_whitespace())
-        .map(|mut parts| match parts.next() {
-            Some("$") => match parts.next() {
-                Some("cd") => match parts.next() {
-                    Some("/") => CmdLine::Command(Command::CdRoot),
-                    Some("..") => CmdLine::Command(Command::CdUp),
-                    Some(x) => CmdLine::Command(Command::CdFolder(x.to_owned())),
-                    None => panic!("expected parameter for CD"),
+        .map(|line| line.split_whitespace().collect_vec())
+        .map(|split| match split.as_slice() {
+            ["$", cmd @ ..] => match cmd {
+                ["cd", path @ ..] => match path {
+                    ["/"] => CmdLine::Command(Command::CdRoot),
+                    [".."] => CmdLine::Command(Command::CdUp),
+                    [x] => CmdLine::Command(Command::CdFolder(x.to_string())),
+                    _ => panic!("unexpected cd parameters: {:?}", path),
                 },
-                Some("ls") => CmdLine::Command(Command::List),
-                Some(x) => panic!("unknown command: {}", x),
-                None => panic!("expected command"),
+                ["ls"] => CmdLine::Command(Command::List),
+                _ => panic!("unknown command: {:?}", cmd),
             },
-            Some("dir") => {
-                if let Some(x) = parts.next() {
-                    CmdLine::Output(Output::Dir(x.to_owned()))
-                } else {
-                    panic!("expected name of directory")
-                }
+            ["dir", name] => CmdLine::Output(Output::Dir(name.to_string())),
+            [size_raw, name] if let Ok(size) = size_raw.parse::<u32>() => {
+                CmdLine::Output(Output::File(size, name.to_string()))
             }
-            Some(x) => {
-                if let Ok(s) = x.parse::<u32>() {
-                    if let Some(n) = parts.next() {
-                        CmdLine::Output(Output::File(s, n.to_owned()))
-                    } else {
-                        panic!("expected name of file")
-                    }
-                } else {
-                    panic!("expected size of file")
-                }
-            }
-            None => panic!("empty line"),
+            _ => panic!("unexpected line: {:?}", split),
         })
         .collect_vec()
 }
