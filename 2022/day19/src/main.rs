@@ -8,10 +8,10 @@ fn main() {
     let input = fs::read_to_string("./_data/input.txt").expect("oh noes");
 
     let output = process_data(input.clone());
-    //let adv_output = process_data_adv(input);
+    let adv_output = process_data_adv(input);
 
     println!("Result is: {}", output);
-    //println!("Adv result is: {}", adv_output);
+    println!("Adv result is: {}", adv_output);
 }
 
 fn process_data(input: String) -> String {
@@ -27,175 +27,181 @@ fn process_data(input: String) -> String {
         .map(|b| {
             (
                 b.id,
-                strategy(b, resources.clone(), robots.clone(), TIME_LIMIT),
+                strategy(
+                    b,
+                    resources.clone(),
+                    robots.clone(),
+                    TIME_LIMIT,
+                    true,
+                    true,
+                    true,
+                ),
             )
         })
-        .map(|(id, geodes)| id * geodes.1)
+        .map(|(id, geodes)| id * geodes)
         .sum::<u32>()
         .to_string()
 }
 
-// fn process_data_adv(input: String) -> String {
-//     const TIME_LIMIT: u32 = 32;
+fn process_data_adv(input: String) -> String {
+    const TIME_LIMIT: u32 = 32;
 
-//     let blueprints = parse(input);
-//     let resources = Resources::new();
-//     let robots = Robots::new();
+    let blueprints = parse(input);
+    let resources = Resources::new();
+    let robots = Robots::new();
 
-//     blueprints
-//         .iter()
-//         .take(3)
-//         .progress()
-//         .map(|b| {
-//             let (msg, val) = strategy(b, resources.clone(), robots.clone(), TIME_LIMIT);
-//             println!("{msg}");
-//             val
-//         })
-//         .product::<u32>()
-//         .to_string()
-// }
+    blueprints
+        .iter()
+        .take(3)
+        .progress()
+        .map(|b| {
+            strategy(
+                b,
+                resources.clone(),
+                robots.clone(),
+                TIME_LIMIT,
+                true,
+                true,
+                true,
+            )
+        })
+        .product::<u32>()
+        .to_string()
+}
 
 fn strategy(
     blueprint: &Blueprint,
     resources: Resources,
     robots: Robots,
     time: u32,
-) -> (String, u32) {
+    can_build_ore: bool,
+    can_build_clay: bool,
+    can_build_obs: bool,
+) -> u32 {
     if time == 0 {
-        return (
-            format!("time: {time} - completed"),
-            resources.cracked_geodes,
-        );
+        return resources.cracked_geodes;
     }
 
-    let mut branches = Vec::<(String, u32)>::new();
     let (geo_ore_cost, geo_obs_cost) = blueprint.geode_robot_cost;
     let (obs_ore_cost, obs_clay_cost) = blueprint.obsidian_robot_cost;
+    let max_ore = blueprint
+        .clay_robot_cost
+        .max(obs_ore_cost)
+        .max(geo_ore_cost);
 
-    // if time > 2
-    //     && resources.ores >= geo_ore_cost
-    //     && resources.obsidian >= geo_obs_cost
-    //     && robots.obsidian_robots < geo_obs_cost
-    //     && resources.ores >= obs_ore_cost
-    //     && resources.clay >= obs_clay_cost
-    // {
-    //     {
-    //         let mut new_res = resources.clone();
-    //         let mut new_bot = robots.clone();
-    //         new_res.ores -= geo_ore_cost;
-    //         new_res.obsidian -= geo_obs_cost;
-    //         new_res.inc(&robots);
-    //         new_bot.geode_robots += 1;
+    let can_build_ore =
+        can_build_ore && robots.ore_robots < max_ore && resources.ores >= blueprint.ore_robot_cost;
+    let can_build_clay = can_build_clay
+        && robots.clay_robots < obs_clay_cost
+        && resources.ores >= blueprint.clay_robot_cost;
+    let can_build_obs = can_build_obs
+        && robots.obsidian_robots < geo_obs_cost
+        && resources.ores >= obs_ore_cost
+        && resources.clay >= obs_clay_cost;
+    let can_build_geo = resources.ores >= geo_ore_cost && resources.obsidian >= geo_obs_cost;
 
-    //         let msg = format!("time: {time} - {new_res:?} - {new_bot:?} - add geo");
-    //         let (i_msg, val) = strategy(blueprint, new_res, new_bot, time - 1);
-    //         branches.push((msg + "\n" + &i_msg, val));
-    //     }
+    let mut branches = Vec::<u32>::new();
 
-    //     {
-    //         let mut new_res = resources.clone();
-    //         let mut new_bot = robots.clone();
-    //         new_res.ores -= obs_ore_cost;
-    //         new_res.clay -= obs_clay_cost;
-    //         new_res.inc(&robots);
-    //         new_bot.obsidian_robots += 1;
+    if can_build_geo || can_build_obs {
+        if can_build_geo {
+            let mut new_res = resources.clone();
+            let mut new_bot = robots.clone();
+            new_res.ores -= geo_ore_cost;
+            new_res.obsidian -= geo_obs_cost;
+            new_res.inc(&robots);
+            new_bot.geode_robots += 1;
 
-    //         let msg = format!("time: {time} - {new_res:?} - {new_bot:?} - add obs");
-    //         let (i_msg, val) = strategy(blueprint, new_res, new_bot, time - 1);
-    //         branches.push((msg + "\n" + &i_msg, val));
-    //     }
-
-    // } else {
-        let mut reserved_ore = 0u32;
-
-        {
-            if resources.ores >= geo_ore_cost && resources.obsidian >= geo_obs_cost {
-                let mut new_res = resources;
-                let mut new_bot = robots.clone();
-                new_res.ores -= geo_ore_cost;
-                new_res.obsidian -= geo_obs_cost;
-                new_res.inc(&robots);
-                new_bot.geode_robots += 1;
-
-                let msg = format!("time: {time} - {new_res:?} - {new_bot:?} - add geo");
-                let (i_msg, val) = strategy(blueprint, new_res, new_bot, time - 1);
-                return (msg + "\n" + &i_msg, val);
-            }
-
-            if (resources.ores + (robots.ore_robots * time)) >= geo_ore_cost
-                && (resources.obsidian + (robots.obsidian_robots * time)) >= geo_obs_cost
-            {
-                let req_time = if resources.obsidian >= geo_obs_cost {
-                    0
-                } else {
-                    let missing = geo_obs_cost - resources.obsidian;
-                    missing / robots.obsidian_robots + (missing % robots.obsidian_robots != 0) as u32
-                };
-
-                reserved_ore += geo_ore_cost;
-                reserved_ore -= (robots.ore_robots * req_time).min(reserved_ore);
-            }
+            branches.push(strategy(
+                blueprint,
+                new_res,
+                new_bot,
+                time - 1,
+                true,
+                true,
+                true,
+            ));
         }
 
-        if robots.obsidian_robots < geo_obs_cost
-            && reserved_ore < resources.ores
-            && (resources.ores - reserved_ore) >= obs_ore_cost
-            && resources.clay >= obs_clay_cost
-        {
-            let mut new_res = resources;
+        if can_build_obs {
+            let mut new_res = resources.clone();
             let mut new_bot = robots.clone();
             new_res.ores -= obs_ore_cost;
             new_res.clay -= obs_clay_cost;
             new_res.inc(&robots);
             new_bot.obsidian_robots += 1;
 
-            let msg = format!("time: {time} - {new_res:?} - {new_bot:?} - add obs");
-            let (i_msg, val) = strategy(blueprint, new_res, new_bot, time - 1);
-            return (msg + "\n" + &i_msg, val);
+            branches.push(strategy(
+                blueprint,
+                new_res,
+                new_bot,
+                time - 1,
+                true,
+                true,
+                true,
+            ));
         }
-    //}
 
-    let max_ore = blueprint
-        .clay_robot_cost
-        .max(blueprint.obsidian_robot_cost.0)
-        .max(blueprint.geode_robot_cost.0);
+        if can_build_geo && can_build_obs {
+            return branches.iter().max().cloned().unwrap();
+        }
 
+    } else {
+        if can_build_clay {
+            let mut new_res = resources.clone();
+            let mut new_bot = robots.clone();
+            new_res.ores -= blueprint.clay_robot_cost;
+            new_res.inc(&robots);
+            new_bot.clay_robots += 1;
 
-    if robots.ore_robots < max_ore && resources.ores >= blueprint.ore_robot_cost {
-        let mut new_res = resources.clone();
-        let mut new_bot = robots.clone();
-        new_res.ores -= blueprint.ore_robot_cost;
-        new_res.inc(&robots);
-        new_bot.ore_robots += 1;
+            branches.push(strategy(
+                blueprint,
+                new_res,
+                new_bot,
+                time - 1,
+                true,
+                true,
+                true,
+            ));
+        }
 
-        let msg = format!("time: {time} - {new_res:?} - {new_bot:?} - add ore");
-        let (i_msg, val) = strategy(blueprint, new_res, new_bot, time - 1);
-        branches.push((msg + "\n" + &i_msg, val));
+        if can_build_ore {
+            let mut new_res = resources.clone();
+            let mut new_bot = robots.clone();
+            new_res.ores -= blueprint.ore_robot_cost;
+            new_res.inc(&robots);
+            new_bot.ore_robots += 1;
+
+            branches.push(strategy(
+                blueprint,
+                new_res,
+                new_bot,
+                time - 1,
+                true,
+                true,
+                true,
+            ));
+        }
     }
 
-    if robots.clay_robots < blueprint.obsidian_robot_cost.1
-        && resources.ores >= blueprint.clay_robot_cost
     {
-        let mut new_res = resources.clone();
-        let mut new_bot = robots.clone();
-        new_res.ores -= blueprint.clay_robot_cost;
-        new_res.inc(&robots);
-        new_bot.clay_robots += 1;
+        let can_build_ore = resources.ores < blueprint.ore_robot_cost;
+        let can_build_clay = resources.ores < blueprint.clay_robot_cost;
+        let can_build_obs = resources.ores < obs_ore_cost || resources.clay < obs_clay_cost;
 
-        let msg = format!("time: {time} - {new_res:?} - {new_bot:?} - add clay");
-        let (i_msg, val) = strategy(blueprint, new_res, new_bot, time - 1);
-        branches.push((msg + "\n" + &i_msg, val));
-    }
-
-    {
         let mut new_res = resources;
         new_res.inc(&robots);
-        let msg = format!("time: {time} - {new_res:?} - {robots:?} - add wait");
-        let (i_msg, val) = strategy(blueprint, new_res, robots.clone(), time - 1);
-        branches.push((msg + "\n" + &i_msg, val));
+        branches.push(strategy(
+            blueprint,
+            new_res,
+            robots.clone(),
+            time - 1,
+            can_build_ore,
+            can_build_clay,
+            can_build_obs,
+        ));
     }
 
-    branches.iter().max_by_key(|(_, val)| val).cloned().unwrap()
+    branches.iter().max().cloned().unwrap()
 }
 
 fn parse(input: String) -> Vec<Blueprint> {
@@ -298,9 +304,9 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
         assert_eq!(expected, process_data(input.to_owned()));
     }
 
-    // #[rstest]
-    // #[case(TEST_CASE, "3472")]
-    // fn adv_check(#[case] input: &str, #[case] expected: &str) {
-    //     assert_eq!(expected, process_data_adv(input.to_owned()));
-    // }
+    #[rstest]
+    #[case(TEST_CASE, "3472")]
+    fn adv_check(#[case] input: &str, #[case] expected: &str) {
+        assert_eq!(expected, process_data_adv(input.to_owned()));
+    }
 }
