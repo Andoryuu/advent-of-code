@@ -1,0 +1,21 @@
+[workspace]
+resolver = "2"
+members = [
+    "day00",
+    "day01",
+]
+
+[workspace.dependencies]
+bitflags = "2.4.1"
+indexmap = "2.1.0"
+indicatif = "0.17.2"
+itertools = "0.12.0"
+nom = "7.1.1"
+num = "0.4.0"
+rand = "0.8.5"
+rayon = "1.5.3"
+fancy-regex = "0.12.0"
+rstest = "0.18.2"
+
+[profile.release]
+debug = true
