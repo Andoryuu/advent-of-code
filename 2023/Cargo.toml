@@ -13,10 +13,12 @@ members = [
     "day09",
     "day10",
     "day11",
+    "day12",
 ]
 
 [workspace.dependencies]
 bitflags = "2.4.1"
+cached = "0.46.1"
 indexmap = "2.1.0"
 indicatif = "0.17.2"
 itertools = "0.12.0"
