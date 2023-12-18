@@ -39,66 +39,27 @@ fn process_part_2(input: &str) -> String {
 }
 
 fn process(input: &str, parser: fn(&str) -> (Direction, isize)) -> isize {
-    let poly = input
-        .trim()
-        .lines()
-        .map(parser)
-        .fold(
-            (vec![], 0isize, 0isize),
-            |(mut res, mut row, mut col), (dir, num)| {
-                match dir {
-                    Direction::Up => row -= num,
-                    Direction::Left => col -= num,
-                    Direction::Down => row += num,
-                    Direction::Right => col += num,
-                };
-
-                res.push((row, col));
-
-                (res, row, col)
-            },
-        )
-        .0;
-
-    integer_shoelace(poly)
-}
-
-fn integer_shoelace(poly: Vec<(isize, isize)>) -> isize {
-    let poly_size = poly.len();
-
-    let (poly_a, poly_b) = poly
-        .into_iter()
-        .cycle()
-        .tuple_windows()
-        .take(poly_size)
-        .map(|(from, mid, to)| {
-            let (col_a, col_b) = if to.0 > from.0 {
-                (0.5, -0.5)
-            } else {
-                (-0.5, 0.5)
+    let (poly, sum, _, _) = input.trim().lines().map(parser).fold(
+        (vec![], 0isize, 0isize, 0isize),
+        |(mut res, sum, mut row, mut col), (dir, num)| {
+            match dir {
+                Direction::Up => row -= num,
+                Direction::Left => col -= num,
+                Direction::Down => row += num,
+                Direction::Right => col += num,
             };
 
-            let (row_a, row_b) = if to.1 > from.1 {
-                (-0.5, 0.5)
-            } else {
-                (0.5, -0.5)
-            };
+            res.push((row, col));
 
-            (
-                (mid.0 as f64 + row_a, mid.1 as f64 + col_a),
-                (mid.0 as f64 + row_b, mid.1 as f64 + col_b),
-            )
-        })
-        .unzip();
+            (res, sum + num, row, col)
+        },
+    );
 
-    let area_a = shoelace(poly_a).abs();
-    let area_b = shoelace(poly_b).abs();
-
-    // get the area of the outer poly
-    area_a.max(area_b) as isize
+    // TIL Pick's theorem
+    shoelace(poly).abs() + (sum / 2) + 1
 }
 
-fn shoelace<T: num::Float + num::Signed>(poly: Vec<(T, T)>) -> T {
+fn shoelace<T: num::Num + num::Signed + num::NumCast + std::clone::Clone>(poly: Vec<(T, T)>) -> T {
     let poly_size = poly.len();
 
     poly.into_iter()
