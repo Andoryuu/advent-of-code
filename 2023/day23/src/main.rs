@@ -6,7 +6,7 @@ use std::{
 };
 
 use itertools::Itertools;
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 fn main() {
     let input = fs::read_to_string("./day23/_data/input.txt").expect("oh noes");
@@ -205,19 +205,41 @@ fn get_path_from_graph(
 ) -> Option<usize> {
     visited.insert(current);
 
-    graph
-        .get(&current)
-        .unwrap()
-        .par_iter()
-        .filter(|(_, target)| !visited.contains(target))
-        .filter_map(|(len, target)| {
-            if *target == END_ID {
-                Some(*len)
-            } else {
-                get_path_from_graph(*target, visited.clone(), graph).map(|l| l + len)
+    let mut targets = Vec::new();
+    let mut res = Vec::new();
+
+    for (len, target) in graph.get(&current).unwrap() {
+        if *target == END_ID {
+            res.push(*len);
+        } else if !visited.contains(target) {
+            targets.push((*len, *target));
+        }
+    }
+
+    if !targets.is_empty() {
+        if targets.len() > 1 {
+            if let Some(max) = targets
+                .into_par_iter()
+                .filter_map(|(len, target)| {
+                    get_path_from_graph(target, visited.clone(), graph).map(|l| l + len)
+                })
+                .max()
+            {
+                res.push(max);
             }
-        })
-        .max()
+        } else {
+            let (len, target) = targets.first().unwrap();
+            if let Some(max) = get_path_from_graph(*target, visited, graph) {
+                res.push(max + len);
+            }
+        }
+    }
+
+    if res.is_empty() {
+        None
+    } else {
+        res.into_iter().max()
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
