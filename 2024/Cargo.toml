@@ -2,7 +2,7 @@
 resolver = "2"
 members = [
     "day00",
-    # "day01",
+    "day01",
     # "day02",
     # "day03",
     # "day04",
@@ -32,7 +32,7 @@ members = [
 [workspace.dependencies]
 bitflags = "2.4.1"
 cached = "0.54.0"
-indexmap = "2.1.0"
+indexmap = "2.7.0"
 indicatif = "0.17.2"
 itertools = "0.13.0"
 nom = "7.1.1"
