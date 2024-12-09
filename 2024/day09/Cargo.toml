@@ -1,0 +1,20 @@
+[package]
+name = "day09"
+version = "0.1.0"
+edition = "2021"
+
+[dev-dependencies]
+rstest.workspace = true
+
+[dependencies]
+auto_enums = "0.8.6"
+bitflags.workspace = true
+cached.workspace = true
+fancy-regex.workspace = true
+indexmap.workspace = true
+indicatif.workspace = true
+itertools.workspace = true
+nom.workspace = true
+num.workspace = true
+rand.workspace = true
+rayon.workspace = true
