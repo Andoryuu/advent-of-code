@@ -1,7 +1,8 @@
 #![feature(test)]
 
 use std::{
-    collections::{HashMap, HashSet, VecDeque},
+    cmp::Reverse,
+    collections::{BinaryHeap, HashMap, HashSet},
     fs, iter,
 };
 
@@ -73,12 +74,12 @@ fn process_part_2(input: &str) -> String {
         })
         .collect_vec();
 
-    let mut spaces: HashMap<usize, VecDeque<usize>> = HashMap::from_iter(
+    let mut spaces: HashMap<_, BinaryHeap<_>> = HashMap::from_iter(
         disk.iter()
             .enumerate()
             .filter_map(|(index, &size)| {
                 if index.is_odd() && size != 0 {
-                    Some((size, index))
+                    Some((size, Reverse(index)))
                 } else {
                     None
                 }
@@ -88,7 +89,7 @@ fn process_part_2(input: &str) -> String {
             .map(|(k, v)| (k, v.into())),
     );
 
-    let mut moved: HashMap<usize, Vec<(usize, usize)>> = HashMap::new();
+    let mut moved: HashMap<usize, Vec<(_, _)>> = HashMap::new();
     let mut removed = HashSet::new();
 
     for (file_index, file_size) in files {
@@ -96,8 +97,8 @@ fn process_part_2(input: &str) -> String {
             .filter_map(|size| {
                 spaces
                     .get(&size)
-                    .and_then(|v| v.front())
-                    .map(move |ix| (size, *ix))
+                    .and_then(|v| v.peek())
+                    .map(move |ix| (size, ix.0))
             })
             .k_smallest_by_key(1, |(_, ix)| *ix)
             .next()
@@ -115,19 +116,15 @@ fn process_part_2(input: &str) -> String {
             let new_space_size = space_size - file_size;
             disk[space_index] = new_space_size;
 
-            spaces.get_mut(&space_size).map(|v| v.pop_front());
+            spaces.get_mut(&space_size).map(|v| v.pop());
 
             if new_space_size > 0 {
                 spaces
                     .entry(new_space_size)
                     .and_modify(|new| {
-                        if let Some(new_pos) = new.iter().position(|i| i > &space_index) {
-                            new.insert(new_pos, space_index);
-                        } else {
-                            new.push_back(space_index);
-                        }
+                        new.push(Reverse(space_index));
                     })
-                    .or_insert_with(|| [space_index].into());
+                    .or_insert_with(|| [Reverse(space_index)].into());
             }
         }
     }
@@ -208,6 +205,20 @@ mod tests {
         assert_eq!(expected, process_part_2(&input));
     }
 
+    #[rstest]
+    #[case("97898222299196")]
+    fn part_m_ante(#[case] expected: &str) {
+        let input = fs::read_to_string("./_data/input_mid.txt").expect("oh noes");
+        assert_eq!(expected, process_part_2(&input));
+    }
+
+    #[rstest]
+    #[case("5799706413896802")]
+    fn part_h_ante(#[case] expected: &str) {
+        let input = fs::read_to_string("./_data/input_hard.txt").expect("oh noes");
+        assert_eq!(expected, process_part_2(&input));
+    }
+
     #[bench]
     fn part_1_check_bench(b: &mut Bencher) {
         b.iter(|| process_part_1(TEST_CASE));
@@ -227,6 +238,30 @@ mod tests {
     #[bench]
     fn part_2_control_bench(b: &mut Bencher) {
         let input = input();
+        b.iter(|| process_part_2(&input));
+    }
+
+    #[bench]
+    fn part_m1_ante_bench(b: &mut Bencher) {
+        let input = fs::read_to_string("./_data/input_mid.txt").expect("oh noes");
+        b.iter(|| process_part_1(&input));
+    }
+
+    #[bench]
+    fn part_m2_ante_bench(b: &mut Bencher) {
+        let input = fs::read_to_string("./_data/input_mid.txt").expect("oh noes");
+        b.iter(|| process_part_2(&input));
+    }
+
+    #[bench]
+    fn part_h1_ante_bench(b: &mut Bencher) {
+        let input = fs::read_to_string("./_data/input_hard.txt").expect("oh noes");
+        b.iter(|| process_part_1(&input));
+    }
+
+    #[bench]
+    fn part_h2_ante_bench(b: &mut Bencher) {
+        let input = fs::read_to_string("./_data/input_hard.txt").expect("oh noes");
         b.iter(|| process_part_2(&input));
     }
 }
