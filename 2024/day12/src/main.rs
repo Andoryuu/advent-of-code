@@ -1,10 +1,8 @@
 #![feature(test)]
 
-use std::{
-    collections::{HashMap, HashSet},
-    fs,
-};
+use std::fs;
 
+use fxhash::{FxHashMap, FxHashSet};
 use itertools::Itertools;
 use num::Integer;
 
@@ -28,12 +26,12 @@ where
     F: Fn(
         (isize, isize),
         char,
-        &HashMap<(isize, isize), char>,
-        &mut HashSet<(isize, isize)>,
+        &FxHashMap<(isize, isize), char>,
+        &mut FxHashSet<(isize, isize)>,
     ) -> (usize, usize),
 {
     let field = parse(input);
-    let mut visited = HashSet::new();
+    let mut visited = FxHashSet::default();
 
     field
         .iter()
@@ -48,7 +46,7 @@ where
         .sum()
 }
 
-fn parse(input: &str) -> HashMap<(isize, isize), char> {
+fn parse(input: &str) -> FxHashMap<(isize, isize), char> {
     input
         .lines()
         .filter(|line| !line.is_empty())
@@ -63,8 +61,8 @@ fn parse(input: &str) -> HashMap<(isize, isize), char> {
 fn collect_field(
     coord: (isize, isize),
     plant: char,
-    field: &HashMap<(isize, isize), char>,
-    visited: &mut HashSet<(isize, isize)>,
+    field: &FxHashMap<(isize, isize), char>,
+    visited: &mut FxHashSet<(isize, isize)>,
 ) -> (usize, usize) {
     let mut queue = vec![coord];
     visited.insert(coord);
@@ -107,14 +105,14 @@ enum Direction {
 fn collect_field_bulk(
     coord: (isize, isize),
     plant: char,
-    field: &HashMap<(isize, isize), char>,
-    visited: &mut HashSet<(isize, isize)>,
+    field: &FxHashMap<(isize, isize), char>,
+    visited: &mut FxHashSet<(isize, isize)>,
 ) -> (usize, usize) {
     let mut queue = vec![coord];
     visited.insert(coord);
 
     let mut area = 1;
-    let mut sides: HashMap<_, Vec<_>> = HashMap::new();
+    let mut sides: FxHashMap<_, Vec<_>> = FxHashMap::default();
 
     while let Some((row, col)) = queue.pop() {
         for (key, val, neigh) in [
