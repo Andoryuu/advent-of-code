@@ -1,5 +1,5 @@
 [package]
-name = "day09"
+name = "day15"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,6 +11,7 @@ auto_enums.workspace = true
 bitflags.workspace = true
 cached.workspace = true
 fancy-regex.workspace = true
+fxhash.workspace = true
 indexmap.workspace = true
 indicatif.workspace = true
 itertools.workspace = true

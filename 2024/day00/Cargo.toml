@@ -7,6 +7,7 @@ edition = "2021"
 rstest.workspace = true
 
 [dependencies]
+auto_enums.workspace = true
 bitflags.workspace = true
 cached.workspace = true
 fancy-regex.workspace = true

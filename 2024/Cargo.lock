@@ -196,6 +196,7 @@ dependencies = [
 name = "day00"
 version = "0.1.0"
 dependencies = [
+ "auto_enums",
  "bitflags",
  "cached",
  "fancy-regex",
@@ -437,6 +438,25 @@ dependencies = [
 name = "day14"
 version = "0.1.0"
 dependencies = [
+ "bitflags",
+ "cached",
+ "fancy-regex",
+ "fxhash",
+ "indexmap",
+ "indicatif",
+ "itertools",
+ "nom",
+ "num",
+ "rand",
+ "rayon",
+ "rstest",
+]
+
+[[package]]
+name = "day15"
+version = "0.1.0"
+dependencies = [
+ "auto_enums",
  "bitflags",
  "cached",
  "fancy-regex",
