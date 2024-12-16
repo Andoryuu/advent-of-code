@@ -1,0 +1,22 @@
+[package]
+name = "day16"
+version = "0.1.0"
+edition = "2021"
+
+[dev-dependencies]
+rstest.workspace = true
+
+[dependencies]
+auto_enums.workspace = true
+bitflags.workspace = true
+cached.workspace = true
+fancy-regex.workspace = true
+fxhash.workspace = true
+indexmap.workspace = true
+indicatif.workspace = true
+itertools.workspace = true
+nalgebra = "0.33.2"
+nom.workspace = true
+num.workspace = true
+rand.workspace = true
+rayon.workspace = true
