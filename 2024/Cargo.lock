@@ -507,6 +507,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "day17"
+version = "0.1.0"
+dependencies = [
+ "auto_enums",
+ "bitflags",
+ "cached",
+ "fancy-regex",
+ "fxhash",
+ "indexmap",
+ "indicatif",
+ "itertools",
+ "nom",
+ "num",
+ "rand",
+ "rayon",
+ "rstest",
+]
+
+[[package]]
 name = "derive_utils"
 version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -714,6 +733,7 @@ dependencies = [
  "console",
  "number_prefix",
  "portable-atomic",
+ "rayon",
  "unicode-width 0.2.0",
  "web-time",
 ]
