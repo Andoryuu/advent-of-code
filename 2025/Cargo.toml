@@ -3,6 +3,7 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.dependencies]
+anyhow = "1.0.100"
 auto_enums = "0.8.7"
 bitflags = "2.10.0"
 cached = "0.56.0"
