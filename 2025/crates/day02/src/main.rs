@@ -8,7 +8,7 @@ fn main() {
     let input = fs::read_to_string("./crates/day02/_data/input.txt").expect("oh noes");
 
     println!("Part 1 result is: {}", process_part_1(&input));
-    println!("Part 2 result is: {}", process_part_2(&input));  // low: 85508508990
+    println!("Part 2 result is: {}", process_part_2(&input));
 }
 
 fn process_part_1(input: &str) -> String {
