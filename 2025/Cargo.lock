@@ -304,6 +304,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "day05"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "auto_enums",
+ "bitflags",
+ "cached",
+ "fancy-regex",
+ "indexmap",
+ "indicatif",
+ "itertools",
+ "nom",
+ "num",
+ "partitions",
+ "rand",
+ "rayon",
+ "rstest",
+ "rustc-hash",
+]
+
+[[package]]
 name = "derive_utils"
 version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
