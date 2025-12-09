@@ -21,7 +21,7 @@ impl Vector {
         self.end - self.start
     }
 
-    pub fn square_intersects(&self, other: &Vector) -> bool {
+    pub fn square_avoids(&self, other: &Vector) -> bool {
         let min_x = other.start.x.min(other.end.x);
         let min_y = other.start.y.min(other.end.y);
         let max_x = other.start.x.max(other.end.x);

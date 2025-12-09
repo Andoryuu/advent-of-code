@@ -54,7 +54,7 @@ impl Field {
             .rev()
             .filter(|o| {
                 let base_vec = Vector::from_oriented(*o);
-                self.vecs.iter().all(|v| v.square_intersects(&base_vec))
+                self.vecs.iter().all(|v| v.square_avoids(&base_vec))
             })
             .map(|(a, b)| a.get_square_area_with(b))
             .next()
