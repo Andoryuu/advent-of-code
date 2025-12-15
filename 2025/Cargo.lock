@@ -624,6 +624,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "day12"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "auto_enums",
+ "bitflags",
+ "cached",
+ "fancy-regex",
+ "indexmap",
+ "indicatif",
+ "itertools 0.14.0",
+ "nom 8.0.0",
+ "num",
+ "partitions",
+ "rand",
+ "rayon",
+ "rstest",
+ "rustc-hash",
+]
+
+[[package]]
 name = "deflate64"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
