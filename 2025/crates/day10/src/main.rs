@@ -6,7 +6,10 @@ use std::fs;
 
 use indicatif::ParallelProgressIterator;
 use itertools::Itertools;
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use rayon::{
+    iter::{IntoParallelIterator, ParallelIterator},
+    ThreadPoolBuilder,
+};
 
 use crate::components::{JoltageMachine, LightsMachine};
 
@@ -27,13 +30,18 @@ fn process_part_1(input: &str) -> String {
 }
 
 fn process_part_2(input: &str) -> String {
+    ThreadPoolBuilder::new()
+        .num_threads(4)
+        .build_global()
+        .unwrap();
+
     input
         .lines()
         .filter_map(|line| JoltageMachine::try_from(line).ok())
         .collect_vec()
         .into_par_iter()
-        .progress()
         .map(|m| m.required_presses())
+        .progress()
         .sum::<usize>()
         .to_string()
 }
