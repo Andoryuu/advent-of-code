@@ -4,8 +4,9 @@ mod components;
 
 use std::fs;
 
-use indicatif::ProgressIterator;
+use indicatif::ParallelProgressIterator;
 use itertools::Itertools;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use crate::components::{JoltageMachine, LightsMachine};
 
@@ -30,7 +31,7 @@ fn process_part_2(input: &str) -> String {
         .lines()
         .filter_map(|line| JoltageMachine::try_from(line).ok())
         .collect_vec()
-        .into_iter()
+        .into_par_iter()
         .progress()
         .map(|m| m.required_presses())
         .sum::<usize>()
